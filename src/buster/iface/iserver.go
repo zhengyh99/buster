@@ -1,4 +1,4 @@
-package buster
+package iface
 
 //定义服务器接口
 type IServer interface {
@@ -8,4 +8,6 @@ type IServer interface {
 	Run()
 	//服务器关闭
 	Stop()
+
+	AddRouter(router IRouter)
 }

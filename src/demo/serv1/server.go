@@ -1,8 +1,13 @@
 package main
 
-import "buster"
+import (
+	"buster/net"
+	"buster/routers"
+	"buster/utils"
+)
 
 func main() {
-	server := buster.NewServer("[Buster V.1.0]")
+	server := net.NewServer(utils.GlobalObject)
+	server.AddRouter(&routers.PingRouter{})
 	server.Run()
 }

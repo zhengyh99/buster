@@ -1,9 +1,10 @@
-package buster
+package net
 
 import (
+	"buster/iface"
+	"buster/utils"
 	"fmt"
 	"net"
-	"runtime"
 )
 
 //实现IServer 接口
@@ -11,24 +12,31 @@ type Server struct {
 	Name     string
 	Protocal string
 	IP       string
-	Port     string
+	Port     uint32
+	Router   iface.IRouter //注册链接对应该的router业务处理
 }
 
-func NewServer(serverName string) IServer {
+func NewServer(global *utils.GlobalObj) iface.IServer {
 	return &Server{
-		Name:     serverName,
-		Protocal: "tcp4",
-		IP:       "127.0.0.1",
-		Port:     "8808",
+		Name:     global.ServerName,
+		Protocal: global.Protocal,
+		IP:       global.IP,
+		Port:     global.Port,
+		Router:   nil,
 	}
+}
+
+//添加路由
+func (s *Server) AddRouter(router iface.IRouter) {
+	s.Router = router
 }
 
 //服务器开启
 func (s *Server) Start() {
-	fmt.Printf("服务器：%s【%s:%s】正在开启....\n", s.Name, s.IP, s.Port)
+	fmt.Printf("服务器：%s【%s:%d】正在开启....\n", s.Name, s.IP, s.Port)
 	go func() {
 		//解决IP、端口
-		addr, err := net.ResolveTCPAddr(s.Protocal, fmt.Sprintf("%s:%s", s.IP, s.Port))
+		addr, err := net.ResolveTCPAddr(s.Protocal, fmt.Sprintf("%s:%d", s.IP, s.Port))
 		if err != nil {
 			fmt.Println("服务器IP解析出错：", err)
 		}
@@ -38,29 +46,17 @@ func (s *Server) Start() {
 			fmt.Println("服务器监听异常：", err)
 		}
 		fmt.Printf("服务器启动成功，开始监听.....")
+		var cid uint32
 		for {
-			conn, err := listener.Accept()
+			conn, err := listener.AcceptTCP()
 			if err != nil {
 				fmt.Println("服务器接收数据失败~!")
 				continue
 			}
-			go func() {
-				for {
-					buf := make([]byte, 4096)
-					n, err := conn.Read(buf)
-					if err != nil || n <= 0 {
-						fmt.Println("读取客户端数据出错：", err)
-						runtime.Goexit()
-						continue
-					}
-					fmt.Printf("客户端发来数据：%s\n", buf[:n])
-					_, err = conn.Write(buf[:n])
-					if err != nil {
-						fmt.Println("向客户端写入数据失败：", err)
-						continue
-					}
-				}
-			}()
+			//新建Connection 将conn 与客户数据CallBackToClient处理传入
+			dealConn := NewConnection(conn, cid, s.Router)
+			cid++
+			go dealConn.Start()
 		}
 	}()
 

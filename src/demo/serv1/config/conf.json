@@ -1,0 +1,10 @@
+{
+	"Server": null,
+	"IP": "0.0.0.0",
+	"Port": 8808,
+	"ServerName": "Buster Server",
+	"Protocal":"tcp4",
+	"Version": "1.0",
+	"MaxConn": 3,
+	"MaxDataPackSize": 4096
+}
