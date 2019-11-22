@@ -10,6 +10,10 @@ import (
 
 type DataPack struct{}
 
+func NewDataPack() *DataPack {
+	return &DataPack{}
+}
+
 //获取包头长度{
 func (dp *DataPack) GetHeadLen() uint32 {
 	return 8
@@ -38,14 +42,15 @@ func (dp *DataPack) Pack(msg iface.IMessage) (data []byte, err error) {
 func (dp *DataPack) UnPack(data []byte) (iface.IMessage, error) {
 	msg := &Message{}
 	bf := bytes.NewBuffer([]byte{})
-
+	//读长度
 	if err := binary.Read(bf, binary.LittleEndian, msg.DataLen); err != nil {
 		return nil, err
 	}
+	//读id
 	if err := binary.Read(bf, binary.LittleEndian, msg.ID); err != nil {
 		return nil, err
 	}
-
+	//包容量限制
 	if utils.GlobalObject.MaxDataPackSize > 0 && utils.GlobalObject.MaxDataPackSize < msg.DataLen {
 		return nil, errors.New("Data length exceeds limit")
 	}
