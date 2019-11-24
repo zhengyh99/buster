@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"fmt"
 )
 
 type DataPack struct{}
@@ -32,7 +33,7 @@ func (dp *DataPack) Pack(msg iface.IMessage) (data []byte, err error) {
 		return nil, err
 	}
 	//将 data 写入缓冲
-	if err = binary.Write(bf, binary.LittleEndian, msg.GetDataLen()); err != nil {
+	if err = binary.Write(bf, binary.LittleEndian, msg.GetData()); err != nil {
 		return nil, err
 	}
 	return bf.Bytes(), err
@@ -41,13 +42,16 @@ func (dp *DataPack) Pack(msg iface.IMessage) (data []byte, err error) {
 //拆包
 func (dp *DataPack) UnPack(data []byte) (iface.IMessage, error) {
 	msg := &Message{}
-	bf := bytes.NewBuffer([]byte{})
+	bf := bytes.NewReader(data)
 	//读长度
-	if err := binary.Read(bf, binary.LittleEndian, msg.DataLen); err != nil {
+	if err := binary.Read(bf, binary.LittleEndian, &msg.DataLen); err != nil {
+		fmt.Println("binary read1 error:", err)
 		return nil, err
 	}
+	fmt.Printf("msg.datalen=%d\n", msg.DataLen)
 	//读id
-	if err := binary.Read(bf, binary.LittleEndian, msg.ID); err != nil {
+	if err := binary.Read(bf, binary.LittleEndian, &msg.ID); err != nil {
+		fmt.Println("binary read2 error:", err)
 		return nil, err
 	}
 	//包容量限制

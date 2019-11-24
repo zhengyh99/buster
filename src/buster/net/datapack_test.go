@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"runtime"
 	"testing"
 )
 
@@ -17,41 +18,46 @@ func TestDataPack(t *testing.T) {
 		fmt.Println("net listen error:", err)
 	}
 	go func() {
-		//接收数据
-		conn, err := listener.Accept()
-		if err != nil {
-			fmt.Println("listen accept error:", err)
-		}
-		go func(conn net.Conn) {
-			dp := NewDataPack()
-			for {
-				headData := make([]byte, dp.GetHeadLen())
-				_, err := io.ReadFull(conn, headData)
-				if err != nil {
-					fmt.Println(" read headata error:", err)
-				}
-				msgHead, err := dp.UnPack(headData)
-				if err != nil {
-					fmt.Println(" dp UnPack error:", err)
-				}
-				if msgHead.GetDataLen() > 0 {
-					msg, ok := msgHead.(Message)
-					if ok {
-						msg.Data = make([]byte, msg.GetDataLen())
-						_, err := io.ReadFull(conn, msg.Data)
-						if err != nil {
-							fmt.Println("read msg data error:", err)
-							return
-						}
-					} else {
-						fmt.Println("消息类型转换错误")
+		for {
+			//接收数据
+			conn, err := listener.Accept()
+			if err != nil {
+				fmt.Println("listen accept error:", err)
+				runtime.Goexit()
+			}
+			go func(conn net.Conn) {
+				dp := NewDataPack()
+				for {
+					headData := make([]byte, dp.GetHeadLen())
+					_, err := io.ReadFull(conn, headData)
+					if err != nil {
+						fmt.Println(" read headata error:", err)
+						break
+					}
+					msgHead, err := dp.UnPack(headData)
+					if err != nil {
+						fmt.Println(" dp UnPack error:", err)
 						return
 					}
-					fmt.Println("\t Resv Message ID:", msg.GetID(), " Len:", msg.GetDataLen(), " Daga:", msg.GetData())
+					if msgHead.GetDataLen() > 0 {
+						msg, ok := msgHead.(Message)
+						if ok {
+							msg.Data = make([]byte, msg.GetDataLen())
+							_, err := io.ReadFull(conn, msg.Data)
+							if err != nil {
+								fmt.Println("read msg data error:", err)
+								return
+							}
+						} else {
+							fmt.Println("消息类型转换错误")
+							return
+						}
+						fmt.Println("\t Resv Message ID:", msg.GetID(), " Len:", msg.GetDataLen(), " Daga:", msg.GetData())
+					}
 				}
-			}
 
-		}(conn)
+			}(conn)
+		}
 
 	}()
 
@@ -90,4 +96,6 @@ func TestDataPack(t *testing.T) {
 	}
 	send1 = append(send1, send2...)
 	conn.Write(send1)
+	select {}
+
 }
