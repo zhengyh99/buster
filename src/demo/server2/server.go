@@ -8,6 +8,7 @@ import (
 	"runtime"
 )
 
+//封包、拆包服务器端测试
 func main() {
 	listener, err := net.Listen("tcp4", "127.0.0.1:8008")
 	if err != nil {

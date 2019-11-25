@@ -40,7 +40,7 @@ func TestDataPack(t *testing.T) {
 						return
 					}
 					if msgHead.GetDataLen() > 0 {
-						msg, ok := msgHead.(Message)
+						msg, ok := msgHead.(*Message)
 						if ok {
 							msg.Data = make([]byte, msg.GetDataLen())
 							_, err := io.ReadFull(conn, msg.Data)
@@ -52,7 +52,8 @@ func TestDataPack(t *testing.T) {
 							fmt.Println("消息类型转换错误")
 							return
 						}
-						fmt.Println("\t Resv Message ID:", msg.GetID(), " Len:", msg.GetDataLen(), " Daga:", msg.GetData())
+						fmt.Printf("\t Resv Message ID:%d,Len:%d,Data:%s\n\n", msg.GetID(),
+							msg.GetDataLen(), msg.GetData())
 					}
 				}
 

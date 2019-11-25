@@ -15,7 +15,7 @@ type IConnection interface {
 	//获取客户端状态IP port
 	RemoteAddr() net.Addr
 	//向客户端发送数据
-	Send(data []byte) error
+	Send(msgID uint32, msgData []byte) error
 }
 
 //定义处理链接业务的方法

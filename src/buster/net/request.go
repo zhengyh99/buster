@@ -4,7 +4,7 @@ import "buster/iface"
 
 type Request struct {
 	conn iface.IConnection
-	data []byte
+	msg  iface.IMessage
 }
 
 //得到当前链接
@@ -14,6 +14,10 @@ func (r *Request) GetConnection() iface.IConnection {
 
 //得到请求数据
 func (r *Request) GetData() []byte {
-	return r.data
+	return r.msg.GetData()
 
+}
+
+func (r *Request) GetMsgID() uint32 {
+	return r.msg.GetID()
 }

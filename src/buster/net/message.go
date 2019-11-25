@@ -1,9 +1,21 @@
 package net
 
+import (
+	"buster/iface"
+)
+
 type Message struct {
 	ID      uint32
 	DataLen uint32
 	Data    []byte
+}
+
+func NewMessage(id uint32, data []byte) iface.IMessage {
+	return &Message{
+		ID:      id,
+		DataLen: uint32(len(data)),
+		Data:    data,
+	}
 }
 
 //获取消息ID

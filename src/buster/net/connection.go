@@ -2,10 +2,10 @@ package net
 
 import (
 	"buster/iface"
-	"buster/utils"
+	"errors"
 	"fmt"
+	"io"
 	"net"
-	"runtime"
 )
 
 type Connection struct {
@@ -37,16 +37,31 @@ func (c *Connection) StartRead() {
 	defer fmt.Printf("链接ID:%d 正在退出 ，远程IP地址为：%s\n", c.ConnID, c.RemoteAddr().String())
 	defer c.Stop()
 	for {
-		buf := make([]byte, utils.GlobalObject.MaxDataPackSize)
-		n, err := c.Conn.Read(buf)
-		if err != nil {
-			fmt.Println("conn read error:", err)
-			runtime.Goexit()
+		//对接收的数据拆包
+		dp := NewDataPack()
+		headData := make([]byte, dp.GetHeadLen())
+		if _, err := io.ReadFull(c.GetTCPConnection(), headData); err != nil {
+			fmt.Println("read Message head error:", err)
+			break
 		}
+		msg, err := dp.UnPack(headData)
+		if err != nil {
+			fmt.Println("datapack error:", err)
+		}
+		var data []byte
+		if msg.GetDataLen() > 0 {
+			data = make([]byte, msg.GetDataLen())
+			if _, err := io.ReadFull(c.GetTCPConnection(), data); err != nil {
+				fmt.Println("read Message head error:", err)
+				break
+			}
+		}
+		msg.SetData(data)
+
 		//定义一个Resuest
 		req := &Request{
 			conn: c,
-			data: buf[:n],
+			msg:  msg,
 		}
 		c.Router.PreHandle(req)
 		c.Router.Handle(req)
@@ -90,7 +105,22 @@ func (c *Connection) RemoteAddr() net.Addr {
 }
 
 //向客户端发送数据
-func (c *Connection) Send(data []byte) error {
+func (c *Connection) Send(msgID uint32, msgData []byte) error {
+	if c.isClose {
+		return errors.New(" connection is closed ")
+	}
+	//建立消息
+	msg := NewMessage(msgID, msgData)
+	//封包
+	dp := NewDataPack()
+	binMsg, err := dp.Pack(msg)
+	if err != nil {
+		return err
+	}
+	//发送
+	if _, err := c.Conn.Write(binMsg); err != nil {
+		return err
+	}
 	return nil
 
 }
