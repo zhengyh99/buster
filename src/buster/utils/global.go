@@ -46,5 +46,5 @@ func init() {
 		MaxConn:         3,
 		MaxDataPackSize: 4096,
 	}
-	//GlobalObject.Reload()
+	GlobalObject.Reload()
 }
