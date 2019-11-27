@@ -18,10 +18,10 @@ func main() {
 	}
 
 	for i := 0; i < 10; i++ {
-	
+
 		dp := bnet.NewDataPack()
 
-		binMsg, err := dp.Pack(bnet.NewMessage(uint32(i), []byte("this is busert"+strconv.Itoa(i))))
+		binMsg, err := dp.Pack(bnet.NewMessage(1, []byte("this is busert"+strconv.Itoa(i))))
 		if err != nil {
 			fmt.Println("Pack error:", err)
 		}
