@@ -42,13 +42,13 @@ func (dp *DataPack) Pack(msg iface.IMessage) (data []byte, err error) {
 //拆包
 func (dp *DataPack) UnPack(data []byte) (iface.IMessage, error) {
 	msg := &Message{}
-	bf := bytes.NewReader(data)
+	bf := bytes.NewBuffer(data)
 	//读长度
 	if err := binary.Read(bf, binary.LittleEndian, &msg.DataLen); err != nil {
 		fmt.Println("binary read1 error:", err)
 		return nil, err
 	}
-	fmt.Printf("msg.datalen=%d\n", msg.DataLen)
+
 	//读id
 	if err := binary.Read(bf, binary.LittleEndian, &msg.ID); err != nil {
 		fmt.Println("binary read2 error:", err)
