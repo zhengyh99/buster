@@ -6,7 +6,6 @@ import (
 	"io"
 	"net"
 	"strconv"
-	"time"
 )
 
 func main() {
@@ -47,7 +46,6 @@ func main() {
 		msg.SetData(msgData)
 
 		fmt.Printf("\t recv message id:%d,data:%s\n", msg.GetID(), msg.GetData())
-		time.Sleep(2 * time.Second)
 
 	}
 

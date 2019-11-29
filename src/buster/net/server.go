@@ -9,26 +9,26 @@ import (
 
 //实现IServer 接口
 type Server struct {
-	Name     string
-	Protocal string
-	IP       string
-	Port     uint32
-	Router   iface.IRouter //注册链接对应该的router业务处理
+	Name       string
+	Protocal   string
+	IP         string
+	Port       uint32
+	MsgHandler iface.IMsgHandler
 }
 
 func NewServer(global *utils.GlobalObj) iface.IServer {
 	return &Server{
-		Name:     global.ServerName,
-		Protocal: global.Protocal,
-		IP:       global.IP,
-		Port:     global.Port,
-		Router:   nil,
+		Name:       global.ServerName,
+		Protocal:   global.Protocal,
+		IP:         global.IP,
+		Port:       global.Port,
+		MsgHandler: NewMsgHandler(),
 	}
 }
 
 //添加路由
-func (s *Server) AddRouter(router iface.IRouter) {
-	s.Router = router
+func (s *Server) AddRouter(msgID uint32, router iface.IRouter) error {
+	return s.MsgHandler.AddRouter(msgID, router)
 }
 
 //服务器开启
@@ -54,7 +54,7 @@ func (s *Server) Start() {
 				continue
 			}
 			//新建Connection 将conn 与客户数据CallBackToClient处理传入
-			dealConn := NewConnection(conn, cid, s.Router)
+			dealConn := NewConnection(conn, cid, s.MsgHandler)
 			cid++
 			go dealConn.Start()
 		}

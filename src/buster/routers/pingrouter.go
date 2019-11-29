@@ -12,24 +12,30 @@ type PingRouter struct {
 
 //处理conn 业务之前的Hook方法
 func (pr *PingRouter) PreHandle(r iface.IRequest) {
-	_, err := r.GetConnection().GetTCPConnection().Write([]byte("Ping...Pre ......\n"))
+	fmt.Println("Call pre ping Router..........")
+	fmt.Printf("Message ID: %d; Data:%s\n", r.GetMsgID(), r.GetData())
+	err := r.Send(1, []byte("pre	pre 	Pinging。。。。。"))
 	if err != nil {
-		fmt.Println("Ping...Pre error:", err)
+		fmt.Println("requst send error:", err)
 	}
 }
 
 //处理conn 业务的Hook方法
 func (pr *PingRouter) Handle(r iface.IRequest) {
-	_, err := r.GetConnection().GetTCPConnection().Write([]byte("Ping...Ping.....Ping ......\n"))
+	fmt.Println("Call pingping Router..........")
+	fmt.Printf("Message ID: %d; Data:%s\n", r.GetMsgID(), r.GetData())
+	err := r.Send(1, []byte("Pinging	Pinging			Pinging。。。。。"))
 	if err != nil {
-		fmt.Println("Ping...ping error:", err)
+		fmt.Println("requst send error:", err)
 	}
 }
 
 //处理conn 业务之后的Hook方法
 func (pr *PingRouter) PostHandle(r iface.IRequest) {
-	_, err := r.GetConnection().GetTCPConnection().Write([]byte("Ping...Post ......\n"))
+	fmt.Println("Call post pingping Router..........")
+	fmt.Printf("Message ID: %d; Data:%s\n", r.GetMsgID(), r.GetData())
+	err := r.Send(1, []byte("Pinging	posting 	posting 。。。。。"))
 	if err != nil {
-		fmt.Println("Ping...Post error:", err)
+		fmt.Println("requst send error:", err)
 	}
 }

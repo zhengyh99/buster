@@ -18,6 +18,12 @@ func (r *Request) GetData() []byte {
 
 }
 
+//获取 message ID
 func (r *Request) GetMsgID() uint32 {
 	return r.msg.GetID()
+}
+
+//向客户端发送数据
+func (r *Request) Send(msgID uint32, data []byte) error {
+	return r.conn.Send(msgID, data)
 }

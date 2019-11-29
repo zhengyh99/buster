@@ -9,5 +9,5 @@ type IServer interface {
 	//服务器关闭
 	Stop()
 
-	AddRouter(router IRouter)
+	AddRouter(msgID uint32, router IRouter) error
 }

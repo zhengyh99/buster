@@ -5,7 +5,7 @@ package iface
 */
 type IMsgHandler interface {
 	//执行对应的Router消息处理方法
-	DoMessageHandler(request IRequest) error
+	DoMsgHandler(request IRequest) error
 	//为消息提供处理Router
 	AddRouter(msgID uint32, router IRouter) error
 }

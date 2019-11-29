@@ -16,24 +16,46 @@ type Connection struct {
 	//链接状态
 	isClose bool
 
+	//客户端读写消息通道
+	MsgChan chan []byte
+
 	//链接退出/停止的消息通道
 	ExitChan chan bool
 	//当前链接对应的router业务处理
-	Router iface.IRouter
+	MsgHandler iface.IMsgHandler
 }
 
 //初始化链接模块的方法
-func NewConnection(conn *net.TCPConn, connId uint32, router iface.IRouter) *Connection {
+func NewConnection(conn *net.TCPConn, connId uint32, msgHandler iface.IMsgHandler) *Connection {
 	return &Connection{
-		Conn:     conn,
-		ConnID:   connId,
-		isClose:  false,
-		Router:   router,
-		ExitChan: make(chan bool, 1),
+		Conn:       conn,
+		ConnID:     connId,
+		isClose:    false,
+		MsgHandler: msgHandler,
+		MsgChan:    make(chan []byte),
+		ExitChan:   make(chan bool, 1),
 	}
 }
+
+//向客户端发送消息
+func (c *Connection) StartWrite() {
+	fmt.Printf("Goroutine 链接ID:%d 准备向客户端发送数据\n", c.ConnID)
+	for {
+		select { //监听消息通道
+		//接收读消息
+		case data := <-c.MsgChan:
+
+			c.Conn.Write(data)
+		//接收退出消息
+		case <-c.ExitChan:
+			return
+		}
+	}
+}
+
+//开始读取客户端消息
 func (c *Connection) StartRead() {
-	fmt.Printf("Goroutine 链接ID:%d 开始运行\n", c.ConnID)
+	fmt.Printf("Goroutine 链接ID:%d 开始接收客户端数据\n", c.ConnID)
 	defer fmt.Printf("链接ID:%d 正在退出 ，远程IP地址为：%s\n", c.ConnID, c.RemoteAddr().String())
 	defer c.Stop()
 	for {
@@ -47,6 +69,7 @@ func (c *Connection) StartRead() {
 		msg, err := dp.UnPack(headData)
 		if err != nil {
 			fmt.Println("datapack error:", err)
+			break
 		}
 		var data []byte
 		if msg.GetDataLen() > 0 {
@@ -63,10 +86,7 @@ func (c *Connection) StartRead() {
 			conn: c,
 			msg:  msg,
 		}
-		c.Router.PreHandle(req)
-		c.Router.Handle(req)
-		c.Router.PostHandle(req)
-
+		go c.MsgHandler.DoMsgHandler(req)
 	}
 
 }
@@ -75,6 +95,7 @@ func (c *Connection) StartRead() {
 func (c *Connection) Start() {
 	fmt.Printf("远程IP地址为：%s, 链接ID:%d 正在运行\n", c.RemoteAddr().String(), c.ConnID)
 	go c.StartRead()
+	go c.StartWrite()
 }
 
 //关闭链接
@@ -84,7 +105,12 @@ func (c *Connection) Stop() {
 		return
 	}
 	c.isClose = true
+	c.ExitChan <- true
+	//关闭链接
+	c.Conn.Close()
+	//回收资源
 	close(c.ExitChan)
+	close(c.MsgChan)
 
 }
 
@@ -117,10 +143,9 @@ func (c *Connection) Send(msgID uint32, msgData []byte) error {
 	if err != nil {
 		return err
 	}
-	//发送
-	if _, err := c.Conn.Write(binMsg); err != nil {
-		return err
-	}
+	//通过消息通道发送给 客户端
+	c.MsgChan <- binMsg
+
 	return nil
 
 }

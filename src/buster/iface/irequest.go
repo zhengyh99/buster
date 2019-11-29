@@ -10,4 +10,7 @@ type IRequest interface {
 	GetData() []byte
 
 	GetMsgID() uint32
+
+	//向客户端发送数据
+	Send(msgID uint32, data []byte) error
 }
