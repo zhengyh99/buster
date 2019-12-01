@@ -6,5 +6,7 @@
 	"Protocal":"tcp4",
 	"Version": "1.0",
 	"MaxConn": 3,
-	"MaxDataPackSize": 4096
+	"MaxDataPackSize": 4096,
+	"WorkPoolSize":10,
+	"MaxWorkTaskSize": 1024
 }

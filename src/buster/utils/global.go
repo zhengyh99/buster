@@ -8,15 +8,16 @@ import (
 )
 
 type GlobalObj struct {
-	Server     iface.IServer
-	IP         string
-	Port       uint32
-	ServerName string
-	Protocal   string
-
+	Server          iface.IServer
+	IP              string
+	Port            uint32
+	ServerName      string
+	Protocal        string
 	Version         string
 	MaxConn         int
 	MaxDataPackSize uint32
+	WorkPoolSize    uint32 //work池中work(Goruntine)数量
+	MaxWorkTaskSize uint32 //允许用户开辟work的最大数量
 }
 
 func (gObj *GlobalObj) Reload() {
@@ -45,6 +46,8 @@ func init() {
 		Version:         "1.0",
 		MaxConn:         3,
 		MaxDataPackSize: 4096,
+		WorkPoolSize:    10,
+		MaxWorkTaskSize: 1024,
 	}
 	GlobalObject.Reload()
 }
