@@ -14,6 +14,7 @@ type Server struct {
 	IP         string
 	Port       uint32
 	MsgHandler iface.IMsgHandler
+	ConnMng    iface.IConnManager
 }
 
 func NewServer(global *utils.GlobalObj) iface.IServer {
@@ -23,6 +24,7 @@ func NewServer(global *utils.GlobalObj) iface.IServer {
 		IP:         global.IP,
 		Port:       global.Port,
 		MsgHandler: NewMsgHandler(),
+		ConnMng:    NewConnManager(),
 	}
 }
 
@@ -57,6 +59,14 @@ func (s *Server) Start() {
 				fmt.Println("服务器接收数据失败~!")
 				continue
 			}
+			//判断链接个数是否已达上限
+
+			if s.ConnMng.Num() >= utils.GlobalObject.MaxConn {
+				conn.Write([]byte("Maximum number of links has been reached"))
+				conn.Close()
+				continue
+			}
+
 			//新建Connection 将conn 与客户数据CallBackToClient处理传入
 			dealConn := NewConnection(conn, cid, s.MsgHandler)
 			cid++
@@ -78,5 +88,8 @@ func (s *Server) Run() {
 
 //服务器关闭
 func (s *Server) Stop() {
+
+	fmt.Printf("Server:[%s] is stop \n", s.Name)
+	s.ConnMng.ClearAll()
 	//TODO 服务器的资源、状态或开辟的链接信息进行回收或停止
 }
