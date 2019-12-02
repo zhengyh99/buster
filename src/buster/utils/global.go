@@ -16,8 +16,8 @@ type GlobalObj struct {
 	Version         string
 	MaxConn         int
 	MaxDataPackSize uint32
-	WorkPoolSize    uint32 //work池中work(Goruntine)数量
-	MaxWorkTaskSize uint32 //允许用户开辟work的最大数量
+	TaskPoolSize    uint32 //work池中work(Goruntine)数量
+	MaxTaskSize     uint32 //允许用户开辟work的最大数量
 }
 
 func (gObj *GlobalObj) Reload() {
@@ -46,8 +46,8 @@ func init() {
 		Version:         "1.0",
 		MaxConn:         3,
 		MaxDataPackSize: 4096,
-		WorkPoolSize:    10,
-		MaxWorkTaskSize: 1024,
+		TaskPoolSize:    10,
+		MaxTaskSize:     1024,
 	}
 	GlobalObject.Reload()
 }

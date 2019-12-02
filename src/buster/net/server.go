@@ -34,7 +34,11 @@ func (s *Server) AddRouter(msgID uint32, router iface.IRouter) error {
 //服务器开启
 func (s *Server) Start() {
 	fmt.Printf("服务器：%s【%s:%d】正在开启....\n", s.Name, s.IP, s.Port)
+	fmt.Printf("服务器版本号：%d; 最大连接数：%d; 数据包最大值：%d \n",
+		utils.GlobalObject.Version, utils.GlobalObject.MaxConn, utils.GlobalObject.MaxDataPackSize)
 	go func() {
+		//开启任务池
+		s.MsgHandler.OpenTaskPool()
 		//解决IP、端口
 		addr, err := net.ResolveTCPAddr(s.Protocal, fmt.Sprintf("%s:%d", s.IP, s.Port))
 		if err != nil {

@@ -11,18 +11,18 @@ type MsgHandler struct {
 	//存放每个msid对应该的业务处理
 	MsgRouters map[uint32]iface.IRouter
 
-	//work消息队列
+	//任务队列
 	TaskQueue []chan iface.IRequest
 
-	//Work池 work的数量
-	WorkPullSize uint32
+	//任务池 中任务的数量
+	TaskPullSize uint32
 }
 
 func NewMsgHandler() *MsgHandler {
 	return &MsgHandler{
 		MsgRouters:   make(map[uint32]iface.IRouter),
-		WorkPullSize: utils.GlobalObject.WorkPoolSize,
-		TaskQueue:    make([]chan iface.IRequest, utils.GlobalObject.WorkPoolSize),
+		TaskPullSize: utils.GlobalObject.TaskPoolSize,
+		TaskQueue:    make([]chan iface.IRequest, utils.GlobalObject.TaskPoolSize),
 	}
 }
 
@@ -49,19 +49,18 @@ func (mh *MsgHandler) AddRouter(msgID uint32, router iface.IRouter) error {
 	return nil
 }
 
-//开始worker池
-
-func (mh *MsgHandler) StartWorkPool() {
+//开始任务池
+func (mh *MsgHandler) OpenTaskPool() {
 	var i uint32
-	for ; i < mh.WorkPullSize; i++ {
-		mh.TaskQueue[i] = make(chan iface.IRequest, utils.GlobalObject.MaxWorkTaskSize)
-		go mh.StartWork(i, mh.TaskQueue[i])
+	for ; i < mh.TaskPullSize; i++ {
+		mh.TaskQueue[i] = make(chan iface.IRequest, utils.GlobalObject.MaxTaskSize)
+		go mh.RunTask(i, mh.TaskQueue[i])
 	}
 }
 
-//开始单个worker
-
-func (mh *MsgHandler) StartWork(workID uint32, taskQueue chan iface.IRequest) {
+//开始单个任务
+func (mh *MsgHandler) RunTask(taskID uint32, taskQueue chan iface.IRequest) {
+	fmt.Printf("Task ID: %d is runing.....\n", taskID)
 	for {
 
 		select {
@@ -71,12 +70,13 @@ func (mh *MsgHandler) StartWork(workID uint32, taskQueue chan iface.IRequest) {
 	}
 }
 
-func (mh *MsgHandler) SendToTaskWork(request iface.IRequest) {
+//取模将任务分配给相应的任务队列
+func (mh *MsgHandler) SendToTask(request iface.IRequest) {
 
 	connID := request.GetConnection().GetConnID()
-	workID := connID % mh.WorkPullSize
-	fmt.Printf("Add conn id =%d, request Message id=%d to Work id =%d", connID, request.GetMsgID(), workID)
+	taskID := connID % mh.TaskPullSize
+	fmt.Printf("Add conn id =%d, request Message id=%d to task id =%d", connID, request.GetMsgID(), taskID)
 
-	mh.TaskQueue[workID] <- request
+	mh.TaskQueue[taskID] <- request
 
 }

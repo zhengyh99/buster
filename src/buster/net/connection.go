@@ -2,6 +2,7 @@ package net
 
 import (
 	"buster/iface"
+	"buster/utils"
 	"errors"
 	"fmt"
 	"io"
@@ -86,7 +87,16 @@ func (c *Connection) StartRead() {
 			conn: c,
 			msg:  msg,
 		}
-		go c.MsgHandler.DoMsgHandler(req)
+		//判断是否打开任务池机制
+		if utils.GlobalObject.MaxTaskSize > 0 {
+			//将requst发送给任务池处理
+			c.MsgHandler.SendToTask(req)
+		} else {
+			//从路由中找到conn对应该的router
+			//从msgid找到对应的业务处理
+			go c.MsgHandler.DoMsgHandler(req)
+		}
+
 	}
 
 }

@@ -7,6 +7,6 @@
 	"Version": "1.0",
 	"MaxConn": 3,
 	"MaxDataPackSize": 4096,
-	"WorkPoolSize":10,
-	"MaxWorkTaskSize": 1024
+	"TaskPoolSize":10,
+	"MaxTaskSize": 1024
 }
