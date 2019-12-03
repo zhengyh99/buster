@@ -45,6 +45,7 @@ func NewConnection(server iface.IServer, conn *net.TCPConn, connId uint32, msgHa
 		MsgHandler: msgHandler,
 		MsgChan:    make(chan []byte),
 		ExitChan:   make(chan bool, 1),
+		property:   make(map[string]interface{}),
 	}
 	//添加链接至链接管理中
 	server.GetConnMng().Add(c)
@@ -188,14 +189,15 @@ func (c *Connection) SetProperty(key string, value interface{}) {
 }
 
 //获取属性
-func (c *Connection) GetProperty(key string) (value interface{}, err error) {
+func (c *Connection) GetProperty(key string) interface{} {
 	c.propertyLock.RLock()
 	defer c.propertyLock.RUnlock()
 	if v, ok := c.property[key]; ok {
-		return v, nil
-	} else {
-		return nil, fmt.Errorf(" property:%s if not found.\n ", key)
+		return v
 	}
+	fmt.Printf(" property:%s if not found.\n ", key)
+	return nil
+
 }
 
 //删除属性

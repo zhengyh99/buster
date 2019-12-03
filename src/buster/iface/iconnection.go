@@ -16,13 +16,14 @@ type IConnection interface {
 	RemoteAddr() net.Addr
 	//向客户端发送数据
 	Send(msgID uint32, msgData []byte) error
-	
+
 	//设置属性
 	SetProperty(key string, value interface{})
 	//获取属性
-	GetProperty(key string) (value interface{}, err error)
+	GetProperty(key string) interface{}
 	//删除属性
-	RemoveProperty(key string) 
+	RemoveProperty(key string)
+}
 
 //定义处理链接业务的方法
 type HandleAPI func(*net.TCPConn, []byte, int) error
