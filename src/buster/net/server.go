@@ -9,12 +9,14 @@ import (
 
 //实现IServer 接口
 type Server struct {
-	Name       string
-	Protocal   string
-	IP         string
-	Port       uint32
-	MsgHandler iface.IMsgHandler
-	ConnMng    iface.IConnManager
+	Name        string
+	Protocal    string
+	IP          string
+	Port        uint32
+	MsgHandler  iface.IMsgHandler            //消息处理
+	ConnMng     iface.IConnManager           //链接管理
+	OnConnStart func(conn iface.IConnection) //链接建立前的钩子方法
+	OnConnStop  func(conn iface.IConnection) //链接建立后的钩子方法
 }
 
 func NewServer(global *utils.GlobalObj) iface.IServer {
@@ -28,9 +30,41 @@ func NewServer(global *utils.GlobalObj) iface.IServer {
 	}
 }
 
+//注册钩子方法：OnConnStart
+func (s *Server) SetOnConnStart(hookFun func(conn iface.IConnection)) {
+	s.OnConnStart = hookFun
+}
+
+//注册钩子方法：OnConnStop
+func (s *Server) SetOnConnStop(hookFun func(conn iface.IConnection)) {
+	s.OnConnStop = hookFun
+}
+
+//调用钩子方法：OnConnStart
+func (s *Server) CallOnConnStart(conn iface.IConnection) {
+	if s.OnConnStart != nil {
+		fmt.Println(">>>>Call OnConnStart Function.....")
+		s.OnConnStart(conn)
+	}
+}
+
+//调用钩子方法：OnConnStop
+func (s *Server) CallOnConnStop(conn iface.IConnection) {
+	if s.OnConnStop != nil {
+		fmt.Println(">>>>Call OnConnStop Function.....")
+		s.OnConnStop(conn)
+	}
+
+}
+
 //添加路由
 func (s *Server) AddRouter(msgID uint32, router iface.IRouter) error {
 	return s.MsgHandler.AddRouter(msgID, router)
+}
+
+//获取链接管理
+func (s *Server) GetConnMng() iface.IConnManager {
+	return s.ConnMng
 }
 
 //服务器开启
@@ -62,13 +96,16 @@ func (s *Server) Start() {
 			//判断链接个数是否已达上限
 
 			if s.ConnMng.Num() >= utils.GlobalObject.MaxConn {
-				conn.Write([]byte("Maximum number of links has been reached"))
+				errInfo := NewMessage(4040, []byte("Maximum number of links has been reached"))
+				dp := NewDataPack()
+				errBin, _ := dp.Pack(errInfo)
+				conn.Write(errBin)
 				conn.Close()
 				continue
 			}
 
 			//新建Connection 将conn 与客户数据CallBackToClient处理传入
-			dealConn := NewConnection(conn, cid, s.MsgHandler)
+			dealConn := NewConnection(s, conn, cid, s.MsgHandler)
 			cid++
 			go dealConn.Start()
 		}
@@ -80,6 +117,7 @@ func (s *Server) Start() {
 func (s *Server) Run() {
 	//开户服务
 	s.Start()
+	defer s.Stop()
 	//TODO 服务启动后其它业务逻辑
 
 	//阻塞状态

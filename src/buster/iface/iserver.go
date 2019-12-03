@@ -8,6 +8,18 @@ type IServer interface {
 	Run()
 	//服务器关闭
 	Stop()
-
+	//添加路由
 	AddRouter(msgID uint32, router IRouter) error
+
+	//获取链接管理
+	GetConnMng() IConnManager
+	//注册钩子方法：OnConnStart
+	SetOnConnStart(hookFun func(conn IConnection))
+	//注册钩子方法：OnConnStop
+	SetOnConnStop(hookFun func(conn IConnection))
+
+	//调用钩子方法：OnConnStart
+	CallOnConnStart(conn IConnection)
+	//调用钩子方法：OnConnStop
+	CallOnConnStop(conn IConnection)
 }

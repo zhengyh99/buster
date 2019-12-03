@@ -17,8 +17,8 @@ func main() {
 
 	}
 
-	for i := 0; i < 10; i++ {
-	
+	for i := 0; i < 100; i++ {
+
 		dp := bnet.NewDataPack()
 
 		binMsg, err := dp.Pack(bnet.NewMessage(0, []byte("this is busert"+strconv.Itoa(i))))
@@ -47,6 +47,9 @@ func main() {
 		msg.SetData(msgData)
 
 		fmt.Printf("\t recv message id:%d,data:%s\n", msg.GetID(), msg.GetData())
+		if msg.GetID() == 4040 {
+			break
+		}
 		time.Sleep(2 * time.Second)
 
 	}

@@ -23,7 +23,7 @@ func (cm *ConnManager) Add(conn iface.IConnection) {
 	defer cm.connLock.Unlock()
 	cm.connections[conn.GetConnID()] = conn
 	fmt.Printf("connID:%d add to ConnManager sucessful, now number of connection is [%d]\n",
-		conn.GetConnID(), cm.Num)
+		conn.GetConnID(), cm.Num())
 }
 
 //删除链接
@@ -33,7 +33,7 @@ func (cm *ConnManager) Remove(conn iface.IConnection) {
 	delete(cm.connections, conn.GetConnID())
 	conn.Stop()
 	fmt.Printf("connID:%d remove from ConnManager sucessful, now number of connection is [%d]\n",
-		conn.GetConnID(), cm.Num)
+		conn.GetConnID(), cm.Num())
 }
 
 //根据id 返回链接

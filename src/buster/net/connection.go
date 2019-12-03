@@ -7,9 +7,13 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"sync"
 )
 
 type Connection struct {
+
+	//当前链接隶属服务器
+	MyServer iface.IServer
 	//当前链接的socket  tcp 套接字
 	Conn *net.TCPConn
 	//链接ID
@@ -24,11 +28,17 @@ type Connection struct {
 	ExitChan chan bool
 	//当前链接对应的router业务处理
 	MsgHandler iface.IMsgHandler
+
+	//链接属性
+	property map[string]interface{}
+	//链接属性操作锁
+	propertyLock sync.RWMutex
 }
 
 //初始化链接模块的方法
-func NewConnection(conn *net.TCPConn, connId uint32, msgHandler iface.IMsgHandler) *Connection {
-	return &Connection{
+func NewConnection(server iface.IServer, conn *net.TCPConn, connId uint32, msgHandler iface.IMsgHandler) *Connection {
+	c := &Connection{
+		MyServer:   server,
 		Conn:       conn,
 		ConnID:     connId,
 		isClose:    false,
@@ -36,6 +46,9 @@ func NewConnection(conn *net.TCPConn, connId uint32, msgHandler iface.IMsgHandle
 		MsgChan:    make(chan []byte),
 		ExitChan:   make(chan bool, 1),
 	}
+	//添加链接至链接管理中
+	server.GetConnMng().Add(c)
+	return c
 }
 
 //向客户端发送消息
@@ -106,6 +119,8 @@ func (c *Connection) Start() {
 	fmt.Printf("远程IP地址为：%s, 链接ID:%d 正在运行\n", c.RemoteAddr().String(), c.ConnID)
 	go c.StartRead()
 	go c.StartWrite()
+	//调用链接开启的钩子方法
+	c.MyServer.CallOnConnStart(c)
 }
 
 //关闭链接
@@ -116,9 +131,14 @@ func (c *Connection) Stop() {
 	}
 	c.isClose = true
 	c.ExitChan <- true
+	//调用链接关闭钩子方法
+	c.MyServer.CallOnConnStop(c)
 	//关闭链接
 	c.Conn.Close()
+	//将链接从链接管理中移除
+	c.MyServer.GetConnMng().Remove(c)
 	//回收资源
+
 	close(c.ExitChan)
 	close(c.MsgChan)
 
@@ -158,4 +178,29 @@ func (c *Connection) Send(msgID uint32, msgData []byte) error {
 
 	return nil
 
+}
+
+//设置属性
+func (c *Connection) SetProperty(key string, value interface{}) {
+	c.propertyLock.Lock()
+	defer c.propertyLock.Unlock()
+	c.property[key] = value
+}
+
+//获取属性
+func (c *Connection) GetProperty(key string) (value interface{}, err error) {
+	c.propertyLock.RLock()
+	defer c.propertyLock.RUnlock()
+	if v, ok := c.property[key]; ok {
+		return v, nil
+	} else {
+		return nil, fmt.Errorf(" property:%s if not found.\n ", key)
+	}
+}
+
+//删除属性
+func (c *Connection) RemoveProperty(key string) {
+	c.propertyLock.Lock()
+	defer c.propertyLock.Unlock()
+	delete(c.property, key)
 }
