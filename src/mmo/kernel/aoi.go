@@ -57,7 +57,7 @@ func (am *AOIManager) gridHeight() int {
 	return (am.Bottom - am.Top) / am.GridsY
 }
 
-//根据gid 返回当前Grid 周围环境（九宫格）集合
+//根据gid 返回当前Grid 周围环境（九宫格）格子集合
 func (am *AOIManager) GetSurroundingsByGid(gid int) (grids []*Grid) {
 	//判断gid 是否存在
 	if _, ok := am.GridMap[gid]; !ok {
@@ -95,6 +95,30 @@ func (am *AOIManager) GetSurroundingsByGid(gid int) (grids []*Grid) {
 		if gY < am.GridsY-1 {
 			grids = append(grids, am.GridMap[v+am.GridsX])
 		}
+	}
+	return
+}
+
+//根据坐标获取 坐标对应格子id
+func (am *AOIManager) GetGidByPosition(x, y int) (gid int) {
+	//X轴方向对应该格子序数
+	gridX := x - am.Left/am.gridWidth()
+	//Y轴方向对应该格子序数
+	gridY := y - am.Top/am.gridHeight()
+	gid = gridX/am.GridsX + gridY
+	return
+}
+
+//根据坐标返回周边格子的玩家ID
+func (am *AOIManager) GetPlayersByPosition(x, y int) (playerIDs []int) {
+	//根据坐标返回所在格子的ID
+	gid := am.GetGidByPosition(x, y)
+	//根据格子ID返回周围格子集合
+	grids := am.GetSurroundingsByGid(gid)
+
+	for _, grid := range grids {
+		playerIDs = append(playerIDs, grid.GetPlayerIDs()...)
+
 	}
 	return
 }

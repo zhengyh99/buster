@@ -49,7 +49,7 @@ func (g *Grid) Remove(playerID int) {
 }
 
 //返回所有玩家
-func (g *Grid) GetAll() (players []int) {
+func (g *Grid) GetPlayerIDs() (players []int) {
 	g.PlayersLock.RLock()
 	defer g.PlayersLock.RUnlock()
 	for key, _ := range g.Players {
