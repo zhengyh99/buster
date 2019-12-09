@@ -17,42 +17,42 @@ type Grid struct {
 	//下坐标
 	Bottom int
 	//玩家集合
-	Players map[int]bool
+	PlayersMap map[int]bool
 	//玩家集合读写锁
-	PlayersLock sync.RWMutex
+	PMapLock sync.RWMutex
 }
 
 //新建格式
 func NewGrid(gid, left, right, top, bottom int) *Grid {
 	return &Grid{
-		GID:     gid,
-		Left:    left,
-		Right:   right,
-		Top:     top,
-		Bottom:  bottom,
-		Players: make(map[int]bool),
+		GID:        gid,
+		Left:       left,
+		Right:      right,
+		Top:        top,
+		Bottom:     bottom,
+		PlayersMap: make(map[int]bool),
 	}
 }
 
 //添加玩家
 func (g *Grid) Add(playerID int) {
-	g.PlayersLock.Lock()
-	defer g.PlayersLock.Unlock()
-	g.Players[playerID] = true
+	g.PMapLock.Lock()
+	defer g.PMapLock.Unlock()
+	g.PlayersMap[playerID] = true
 }
 
 //删除玩家
 func (g *Grid) Remove(playerID int) {
-	g.PlayersLock.Lock()
-	defer g.PlayersLock.Unlock()
-	delete(g.Players, playerID)
+	g.PMapLock.Lock()
+	defer g.PMapLock.Unlock()
+	delete(g.PlayersMap, playerID)
 }
 
 //返回所有玩家
 func (g *Grid) GetPlayerIDs() (players []int) {
-	g.PlayersLock.RLock()
-	defer g.PlayersLock.RUnlock()
-	for key, _ := range g.Players {
+	g.PMapLock.RLock()
+	defer g.PMapLock.RUnlock()
+	for key, _ := range g.PlayersMap {
 		players = append(players, key)
 	}
 	return
@@ -60,6 +60,6 @@ func (g *Grid) GetPlayerIDs() (players []int) {
 
 //返回格式信息
 func (g *Grid) String() string {
-	return fmt.Sprintf("Gid:=%d,Left:%d,Right:%d,Top:%d,Bottom:%d,Players:%v",
-		g.GID, g.Left, g.Right, g.Top, g.Bottom, g.Players)
+	return fmt.Sprintf("Gid:=%d,Left:%d,Right:%d,Top:%d,Bottom:%d,PlayersMap:%v",
+		g.GID, g.Left, g.Right, g.Top, g.Bottom, g.PlayersMap)
 }

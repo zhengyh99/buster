@@ -132,3 +132,30 @@ func (am *AOIManager) String() string {
 	}
 	return s
 }
+
+//向Grid:gid中 加入Player: pid
+func (am *AOIManager) AddPlayerToGrid(pid, gid int) {
+	am.GridMap[gid].Add(pid)
+}
+
+//将Grid:gid中Player: pid 删除
+func (am *AOIManager) RemovePlayerFromGrid(pid, gid int) {
+	am.GridMap[gid].Remove(pid)
+}
+
+//从Grid:gid中 获取所有Player的pid
+func (am *AOIManager) GetPlayerIDsFromGrid(gid int) (playerIDs []int) {
+	return am.GridMap[gid].GetPlayerIDs()
+}
+
+//向坐标系 （x,y）对应的Grid:gid中加入Player:pid
+func (am *AOIManager) AddPlayerToPosition(pid, x, y int) {
+	gid := am.GetGidByPosition(x, y)
+	am.AddPlayerToGrid(pid, gid)
+
+}
+
+func (am *AOIManager) RemovePlayerFromPosition(pid, x, y int) {
+	gid := am.GetGidByPosition(x, y)
+	am.RemovePlayerFromGrid(pid, gid)
+}
