@@ -1,4 +1,4 @@
-package net
+package bnet
 
 import (
 	"buster/iface"
@@ -55,7 +55,7 @@ func (dp *DataPack) UnPack(data []byte) (iface.IMessage, error) {
 		return nil, err
 	}
 	//包容量限制
-	if utils.GlobalObject.MaxDataPackSize > 0 && utils.GlobalObject.MaxDataPackSize < msg.DataLen {
+	if utils.GlobalConfig.MaxDataPackSize > 0 && utils.GlobalConfig.MaxDataPackSize < msg.DataLen {
 		return nil, errors.New("Data length exceeds limit")
 	}
 	return msg, nil

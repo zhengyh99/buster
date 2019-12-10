@@ -1,4 +1,4 @@
-package net
+package bnet
 
 import (
 	"buster/iface"
@@ -102,7 +102,7 @@ func (c *Connection) StartRead() {
 			msg:  msg,
 		}
 		//判断是否打开任务池机制
-		if utils.GlobalObject.MaxTaskSize > 0 {
+		if utils.GlobalObj.MaxTaskSize > 0 {
 			//将requst发送给任务池处理
 			c.MsgHandler.SendToTask(req)
 		} else {

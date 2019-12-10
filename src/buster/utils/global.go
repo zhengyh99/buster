@@ -34,10 +34,10 @@ func (gObj *GlobalObj) Reload() {
 
 }
 
-var GlobalObject *GlobalObj
+var GlobalConfig *GlobalObj
 
 func init() {
-	GlobalObject = &GlobalObj{
+	GlobalConfig = &GlobalObj{
 		//以下为默认配置
 		IP:              "0.0.0.0",
 		Port:            8808,
@@ -49,5 +49,5 @@ func init() {
 		TaskPoolSize:    10,
 		MaxTaskSize:     1024,
 	}
-	GlobalObject.Reload()
+	GlobalConfig.Reload()
 }

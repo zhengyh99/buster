@@ -1,4 +1,4 @@
-package net
+package bnet
 
 import (
 	"buster/iface"
@@ -21,8 +21,8 @@ type MsgHandler struct {
 func NewMsgHandler() *MsgHandler {
 	return &MsgHandler{
 		MsgRouters:   make(map[uint32]iface.IRouter),
-		TaskPullSize: utils.GlobalObject.TaskPoolSize,
-		TaskQueue:    make([]chan iface.IRequest, utils.GlobalObject.TaskPoolSize),
+		TaskPullSize: utils.GlobalConfig.TaskPoolSize,
+		TaskQueue:    make([]chan iface.IRequest, utils.GlobalConfig.TaskPoolSize),
 	}
 }
 
@@ -53,7 +53,7 @@ func (mh *MsgHandler) AddRouter(msgID uint32, router iface.IRouter) error {
 func (mh *MsgHandler) OpenTaskPool() {
 	var i uint32
 	for ; i < mh.TaskPullSize; i++ {
-		mh.TaskQueue[i] = make(chan iface.IRequest, utils.GlobalObject.MaxTaskSize)
+		mh.TaskQueue[i] = make(chan iface.IRequest, utils.GlobalConfig.MaxTaskSize)
 		go mh.RunTask(i, mh.TaskQueue[i])
 	}
 }

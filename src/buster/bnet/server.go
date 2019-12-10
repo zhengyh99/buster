@@ -1,4 +1,4 @@
-package net
+package bnet
 
 import (
 	"buster/iface"
@@ -19,12 +19,13 @@ type Server struct {
 	OnConnStop  func(conn iface.IConnection) //链接建立后的钩子方法
 }
 
-func NewServer(global *utils.GlobalObj) iface.IServer {
+func NewServer() iface.IServer {
+	config := *utils.GlobalConfig
 	return &Server{
-		Name:       global.ServerName,
-		Protocal:   global.Protocal,
-		IP:         global.IP,
-		Port:       global.Port,
+		Name:       config.ServerName,
+		Protocal:   config.Protocal,
+		IP:         config.IP,
+		Port:       config.Port,
 		MsgHandler: NewMsgHandler(),
 		ConnMng:    NewConnManager(),
 	}
@@ -71,7 +72,7 @@ func (s *Server) GetConnMng() iface.IConnManager {
 func (s *Server) Start() {
 	fmt.Printf("服务器：%s【%s:%d】正在开启....\n", s.Name, s.IP, s.Port)
 	fmt.Printf("服务器版本号：%d; 最大连接数：%d; 数据包最大值：%d \n",
-		utils.GlobalObject.Version, utils.GlobalObject.MaxConn, utils.GlobalObject.MaxDataPackSize)
+		utils.GlobalConfig.Version, utils.GlobalConfig.MaxConn, utils.GlobalConfig.MaxDataPackSize)
 	go func() {
 		//开启任务池
 		s.MsgHandler.OpenTaskPool()
@@ -95,7 +96,7 @@ func (s *Server) Start() {
 			}
 			//判断链接个数是否已达上限
 
-			if s.ConnMng.Num() >= utils.GlobalObject.MaxConn {
+			if s.ConnMng.Num() >= utils.GlobalConfig.MaxConn {
 				errInfo := NewMessage(4040, []byte("Maximum number of links has been reached"))
 				dp := NewDataPack()
 				errBin, _ := dp.Pack(errInfo)
