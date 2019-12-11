@@ -4,6 +4,7 @@ import (
 	"buster/iface"
 	"errors"
 	"math/rand"
+	"mmo/pb"
 	"sync"
 
 	"github.com/golang/protobuf/proto"
@@ -33,7 +34,7 @@ func NewPlayer(conn iface.IConnection) *Player {
 	return &Player{
 		Pid:  pid,
 		Conn: conn,
-		X:    float32(160 + rand.intn(10)),
+		X:    float32(160 + rand.Intn(10)),
 		Y:    0,
 		Z:    float32(140 + rand.Intn(20)),
 		V:    0,
@@ -49,4 +50,28 @@ func (p *Player) SendMsg(msgID uint32, data proto.Message) error {
 		return errors.New("Disconnected from client")
 	}
 	return p.Conn.Send(msgID, pdata)
+}
+
+//告知玩家 Pid ,同步服务器端的 pid 给客户端
+func (p *Player) SyncPid() {
+	pMsg := &pb.SyncPid{
+		Pid: p.Pid,
+	}
+	//将消息发送给客户端
+	p.SendMsg(1, pMsg)
+}
+func (p *Player) BroadCastStartPosition() {
+	pMsg := &pb.BroadCast{
+		Pid: p.Pid,
+		Tp:  2,
+		Data: &pb.BroadCast_P{
+			P: &pb.Position{
+				X: p.X,
+				Y: p.Y,
+				Z: p.Z,
+				V: p.V,
+			},
+		},
+	}
+	p.SendMsg(200, pMsg)
 }

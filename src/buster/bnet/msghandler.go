@@ -75,7 +75,7 @@ func (mh *MsgHandler) SendToTask(request iface.IRequest) {
 
 	connID := request.GetConnection().GetConnID()
 	taskID := connID % mh.TaskPullSize
-	fmt.Printf("Add conn id =%d, request Message id=%d to task id =%d", connID, request.GetMsgID(), taskID)
+	fmt.Printf("Add conn id =%d, request Message id=%d to task id =%d\n", connID, request.GetMsgID(), taskID)
 
 	mh.TaskQueue[taskID] <- request
 
