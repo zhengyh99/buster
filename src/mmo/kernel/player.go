@@ -76,5 +76,16 @@ func (p *Player) BroadCastStartPosition() {
 	p.SendMsg(200, pMsg)
 }
 func (p *Player) Talk(content string) {
+	pMsg := &pb.BroadCast{
+		Pid: p.Pid,
+		Tp:  1,
+		Data: &pb.BroadCast_Content{
+			Content: content,
+		},
+	}
+	players := WorldMng.GetAllPlayer()
 
+	for _, player := range players {
+		player.SendMsg(200, pMsg)
+	}
 }
