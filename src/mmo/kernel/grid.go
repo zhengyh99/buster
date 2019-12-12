@@ -17,7 +17,7 @@ type Grid struct {
 	//下坐标
 	Bottom int
 	//玩家集合
-	PlayersMap map[int]bool
+	PlayersMap map[int32]bool
 	//玩家集合读写锁
 	PMapLock sync.RWMutex
 }
@@ -30,26 +30,26 @@ func NewGrid(gid, left, right, top, bottom int) *Grid {
 		Right:      right,
 		Top:        top,
 		Bottom:     bottom,
-		PlayersMap: make(map[int]bool),
+		PlayersMap: make(map[int32]bool),
 	}
 }
 
 //添加玩家
-func (g *Grid) Add(playerID int) {
+func (g *Grid) Add(playerID int32) {
 	g.PMapLock.Lock()
 	defer g.PMapLock.Unlock()
 	g.PlayersMap[playerID] = true
 }
 
 //删除玩家
-func (g *Grid) Remove(playerID int) {
+func (g *Grid) Remove(playerID int32) {
 	g.PMapLock.Lock()
 	defer g.PMapLock.Unlock()
 	delete(g.PlayersMap, playerID)
 }
 
 //返回所有玩家
-func (g *Grid) GetPlayerIDs() (players []int) {
+func (g *Grid) GetPlayerIDs() (players []int32) {
 	g.PMapLock.RLock()
 	defer g.PMapLock.RUnlock()
 	for key, _ := range g.PlayersMap {

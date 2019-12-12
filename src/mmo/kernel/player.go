@@ -75,3 +75,6 @@ func (p *Player) BroadCastStartPosition() {
 	}
 	p.SendMsg(200, pMsg)
 }
+func (p *Player) Talk(content string) {
+
+}

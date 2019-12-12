@@ -2,6 +2,15 @@ package kernel
 
 import "fmt"
 
+const (
+	AOILeft   = 10
+	AOIRight  = 510
+	AOITop    = 10
+	AOIBottom = 360
+	AOIGridsX = 20
+	AOIGridsY = 10
+)
+
 type AOIManager struct {
 	//区域边界 左
 	Left int
@@ -21,7 +30,7 @@ type AOIManager struct {
 	GridMap map[int]*Grid
 }
 
-func NewAOIManager(left, right, gridsX, top, bottom, gridsY int) *AOIManager {
+func NewAOIManager(left, right, top, bottom, gridsX, gridsY int) *AOIManager {
 	am := &AOIManager{
 		Left:    left,
 		Right:   right,
@@ -100,17 +109,17 @@ func (am *AOIManager) GetSurroundingsByGid(gid int) (grids []*Grid) {
 }
 
 //根据坐标获取 坐标对应格子id
-func (am *AOIManager) GetGidByPosition(x, y int) (gid int) {
+func (am *AOIManager) GetGidByPosition(x, y float32) (gid int) {
 	//X轴方向对应该格子序数
-	gridX := x - am.Left/am.gridWidth()
+	gridX := int(x) - am.Left/am.gridWidth()
 	//Y轴方向对应该格子序数
-	gridY := y - am.Top/am.gridHeight()
+	gridY := int(y) - am.Top/am.gridHeight()
 	gid = gridX/am.GridsX + gridY
 	return
 }
 
 //根据坐标返回周边格子的玩家ID
-func (am *AOIManager) GetPlayersByPosition(x, y int) (playerIDs []int) {
+func (am *AOIManager) GetPlayersByPosition(x, y float32) (playerIDs []int32) {
 	//根据坐标返回所在格子的ID
 	gid := am.GetGidByPosition(x, y)
 	//根据格子ID返回周围格子集合
@@ -134,28 +143,28 @@ func (am *AOIManager) String() string {
 }
 
 //向Grid:gid中 加入Player: pid
-func (am *AOIManager) AddPlayerToGrid(pid, gid int) {
+func (am *AOIManager) AddPlayerToGrid(pid int32, gid int) {
 	am.GridMap[gid].Add(pid)
 }
 
 //将Grid:gid中Player: pid 删除
-func (am *AOIManager) RemovePlayerFromGrid(pid, gid int) {
+func (am *AOIManager) RemovePlayerFromGrid(pid int32, gid int) {
 	am.GridMap[gid].Remove(pid)
 }
 
 //从Grid:gid中 获取所有Player的pid
-func (am *AOIManager) GetPlayerIDsFromGrid(gid int) (playerIDs []int) {
+func (am *AOIManager) GetPlayerIDsFromGrid(gid int) (playerIDs []int32) {
 	return am.GridMap[gid].GetPlayerIDs()
 }
 
 //向坐标系 （x,y）对应的Grid:gid中加入Player:pid
-func (am *AOIManager) AddPlayerToPosition(pid, x, y int) {
+func (am *AOIManager) AddPlayerToPosition(pid int32, x, y float32) {
 	gid := am.GetGidByPosition(x, y)
 	am.AddPlayerToGrid(pid, gid)
 
 }
 
-func (am *AOIManager) RemovePlayerFromPosition(pid, x, y int) {
+func (am *AOIManager) RemovePlayerFromPosition(pid int32, x, y float32) {
 	gid := am.GetGidByPosition(x, y)
 	am.RemovePlayerFromGrid(pid, gid)
 }
