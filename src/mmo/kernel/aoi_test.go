@@ -7,14 +7,14 @@ import (
 
 func TestAOIManager(t *testing.T) {
 	//初始化AOIManager
-	am := NewAOIManager(100, 300, 4, 200, 400, 4)
+	am := NewAOIManager(AOILeft, AOIRight, AOITop, AOIBottom, AOIGridsX, AOIGridsY)
 	//打印
 	fmt.Println(am)
 }
 
 func TestGetSurroundingsByGid(t *testing.T) {
 	//初始化AOIManager
-	am := NewAOIManager(100, 300, 4, 200, 400, 4)
+	am := NewAOIManager(AOILeft, AOIRight, AOITop, AOIBottom, AOIGridsX, AOIGridsY)
 
 	for gid, _ := range am.GridMap {
 

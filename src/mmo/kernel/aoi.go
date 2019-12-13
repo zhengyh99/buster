@@ -3,10 +3,10 @@ package kernel
 import "fmt"
 
 const (
-	AOILeft   = 10
-	AOIRight  = 510
+	AOILeft   = 110
+	AOIRight  = 310
 	AOITop    = 10
-	AOIBottom = 360
+	AOIBottom = 110
 	AOIGridsX = 20
 	AOIGridsY = 10
 )
@@ -43,7 +43,9 @@ func NewAOIManager(left, right, top, bottom, gridsX, gridsY int) *AOIManager {
 	//初始化 grid 布局
 	for y := 0; y < am.GridsY; y++ {
 		for x := 0; x < am.GridsX; x++ {
+
 			gid := y*am.GridsY + x
+			fmt.Println("gid:", gid)
 			am.GridMap[gid] = NewGrid(gid,
 				am.Left+x*am.gridWidth(),
 				am.Left+(x+1)*am.gridWidth(),
@@ -68,6 +70,7 @@ func (am *AOIManager) gridHeight() int {
 
 //根据gid 返回当前Grid 周围环境（九宫格）格子集合
 func (am *AOIManager) GetSurroundingsByGid(gid int) (grids []*Grid) {
+	grids = make([]*Grid, 0)
 	//判断gid 是否存在
 	if _, ok := am.GridMap[gid]; !ok {
 		return nil
@@ -122,8 +125,10 @@ func (am *AOIManager) GetGidByPosition(x, y float32) (gid int) {
 func (am *AOIManager) GetPlayersByPosition(x, y float32) (playerIDs []int32) {
 	//根据坐标返回所在格子的ID
 	gid := am.GetGidByPosition(x, y)
+	fmt.Println("gid:--------1:", gid)
 	//根据格子ID返回周围格子集合
 	grids := am.GetSurroundingsByGid(gid)
+	fmt.Println("neighbor gid :", grids)
 
 	for _, grid := range grids {
 		playerIDs = append(playerIDs, grid.GetPlayerIDs()...)

@@ -14,6 +14,7 @@ func LoginInit(conn iface.IConnection) {
 	kernel.WorldMng.AddPlayer(player)
 
 	conn.SetProperty("pid", player.Pid)
+	player.SyncSurrounding()
 
 }
 

@@ -3,6 +3,7 @@ package kernel
 import (
 	"buster/iface"
 	"errors"
+	"fmt"
 	"math/rand"
 	"mmo/pb"
 	"sync"
@@ -85,6 +86,46 @@ func (p *Player) Talk(content string) {
 	}
 	players := WorldMng.GetAllPlayer()
 
+	for _, player := range players {
+		player.SendMsg(200, pMsg)
+	}
+}
+func (p *Player) allplayerPOS() {
+	ps := WorldMng.GetAllPlayer()
+	for _, p1 := range ps {
+		fmt.Printf("player id: %d,x=%v,y=%v,z=%v,v=%v\n", p1.Pid, p1.X, p1.Y, p1.Z, p1.V)
+	}
+}
+
+//同步周围玩家
+func (p *Player) SyncSurrounding() {
+
+	p.allplayerPOS()
+	//根据当前玩家的位置信息，找到周边玩家的集合pids
+	pids := WorldMng.AoiMng.GetPlayersByPosition(p.X, p.Z)
+	fmt.Println("pids:", pids)
+	//周边玩家的集合players
+	players := make([]*Player, 0, len(pids))
+
+	for _, pid := range pids {
+		players = append(players, WorldMng.Players[pid])
+	}
+	//组织广播信息
+
+	fmt.Printf("player id: %d,x=%v,y=%v,z=%v,v=%v\n", p.Pid, p.X, p.Y, p.Z, p.V)
+
+	pMsg := &pb.BroadCast{
+		Pid: p.Pid,
+		Tp:  2,
+		Data: &pb.BroadCast_P{
+			P: &pb.Position{
+				X: p.X,
+				Y: p.Y,
+				Z: p.Z,
+				V: p.V,
+			},
+		},
+	}
 	for _, player := range players {
 		player.SendMsg(200, pMsg)
 	}
