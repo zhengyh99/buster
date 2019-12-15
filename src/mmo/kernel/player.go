@@ -90,17 +90,7 @@ func (p *Player) Talk(content string) {
 		player.SendMsg(200, pMsg)
 	}
 }
-func (p *Player) allplayerPOS() {
-	ps := WorldMng.GetAllPlayer()
-	for _, p1 := range ps {
-		fmt.Printf("player id: %d,x=%v,y=%v,z=%v,v=%v\n", p1.Pid, p1.X, p1.Y, p1.Z, p1.V)
-	}
-}
-
-//同步周围玩家
-func (p *Player) SyncSurrounding() {
-
-	p.allplayerPOS()
+func (p *Player) getSurroundingPlayers() []*Player {
 	//根据当前玩家的位置信息，找到周边玩家的集合pids
 	pids := WorldMng.AoiMng.GetPlayersByPosition(p.X, p.Z)
 	fmt.Println("pids:", pids)
@@ -108,13 +98,20 @@ func (p *Player) SyncSurrounding() {
 	players := make([]*Player, 0, len(pids))
 
 	for _, pid := range pids {
-		players = append(players, WorldMng.Players[pid])
+		players = append(players, WorldMng.GetPlayer(pid))
 	}
+	return players
+}
+
+//同步周围玩家
+func (p *Player) SyncSurrounding() {
+	players := p.getSurroundingPlayers()
+
 	//组织广播信息
 
 	fmt.Printf("player id: %d,x=%v,y=%v,z=%v,v=%v\n", p.Pid, p.X, p.Y, p.Z, p.V)
 
-	pMsg := &pb.BroadCast{
+	myPMsg := &pb.BroadCast{
 		Pid: p.Pid,
 		Tp:  2,
 		Data: &pb.BroadCast_P{
@@ -126,6 +123,48 @@ func (p *Player) SyncSurrounding() {
 			},
 		},
 	}
+
+	playersPMsg := make([]*pb.Player, 0, len(players))
+
+	for _, player := range players {
+		player.SendMsg(200, myPMsg)
+		pMsg := &pb.Player{
+			Pid: player.Pid,
+			P: &pb.Position{
+				X: player.X,
+				Y: player.Y,
+				Z: player.Z,
+				V: player.V,
+			},
+		}
+		playersPMsg = append(playersPMsg, pMsg)
+	}
+	SycnPMsg := &pb.SyncPlayer{
+		Ps: playersPMsg[:],
+	}
+	p.SendMsg(202, SycnPMsg)
+
+}
+
+func (p *Player) UpdatePosition(x, y, z, v float32) {
+	p.X = x
+	p.Y = y
+	p.Z = z
+	p.V = v
+
+	pMsg := &pb.BroadCast{
+		Pid: p.Pid,
+		Tp:  4,
+		Data: &pb.BroadCast_P{
+			P: &pb.Position{
+				X: p.X,
+				Y: p.Y,
+				Z: p.Z,
+				V: p.V,
+			},
+		},
+	}
+	players := p.getSurroundingPlayers()
 	for _, player := range players {
 		player.SendMsg(200, pMsg)
 	}

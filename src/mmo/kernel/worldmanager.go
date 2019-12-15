@@ -26,7 +26,7 @@ func (wm *WorldManager) AddPlayer(player *Player) {
 	defer wm.PLock.Unlock()
 	wm.Players[player.Pid] = player
 
-	wm.AoiMng.AddPlayerToPosition(player.Pid, player.X, player.Y)
+	wm.AoiMng.AddPlayerToPosition(player.Pid, player.X, player.Z)
 }
 
 //从世界中移出玩家
@@ -35,7 +35,7 @@ func (wm *WorldManager) RemovePlayer(pid int32) {
 	defer wm.PLock.Unlock()
 	player := wm.Players[pid]
 	if player != nil {
-		wm.AoiMng.RemovePlayerFromPosition(player.Pid, player.X, player.Y)
+		wm.AoiMng.RemovePlayerFromPosition(player.Pid, player.X, player.Z)
 	}
 }
 

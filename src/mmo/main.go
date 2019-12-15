@@ -22,5 +22,6 @@ func main() {
 	server := bnet.NewServer()
 	server.SetOnConnStart(LoginInit)
 	server.AddRouter(2, &apis.WorldChart{})
+	server.AddRouter(3, &apis.MoveAction{})
 	server.Run()
 }

@@ -3,12 +3,12 @@ package kernel
 import "fmt"
 
 const (
-	AOILeft   = 110
-	AOIRight  = 310
-	AOITop    = 10
-	AOIBottom = 110
-	AOIGridsX = 20
-	AOIGridsY = 10
+	AOILeft   = 85
+	AOIRight  = 410
+	AOITop    = 75
+	AOIBottom = 400
+	AOIGridsX = 10
+	AOIGridsY = 20
 )
 
 type AOIManager struct {
@@ -44,8 +44,8 @@ func NewAOIManager(left, right, top, bottom, gridsX, gridsY int) *AOIManager {
 	for y := 0; y < am.GridsY; y++ {
 		for x := 0; x < am.GridsX; x++ {
 
-			gid := y*am.GridsY + x
-			fmt.Println("gid:", gid)
+			gid := y*am.GridsX + x
+
 			am.GridMap[gid] = NewGrid(gid,
 				am.Left+x*am.gridWidth(),
 				am.Left+(x+1)*am.gridWidth(),
@@ -70,7 +70,6 @@ func (am *AOIManager) gridHeight() int {
 
 //根据gid 返回当前Grid 周围环境（九宫格）格子集合
 func (am *AOIManager) GetSurroundingsByGid(gid int) (grids []*Grid) {
-	grids = make([]*Grid, 0)
 	//判断gid 是否存在
 	if _, ok := am.GridMap[gid]; !ok {
 		return nil
@@ -114,10 +113,10 @@ func (am *AOIManager) GetSurroundingsByGid(gid int) (grids []*Grid) {
 //根据坐标获取 坐标对应格子id
 func (am *AOIManager) GetGidByPosition(x, y float32) (gid int) {
 	//X轴方向对应该格子序数
-	gridX := int(x) - am.Left/am.gridWidth()
+	gridX := (int(x) - am.Left) / am.gridWidth()
 	//Y轴方向对应该格子序数
-	gridY := int(y) - am.Top/am.gridHeight()
-	gid = gridX/am.GridsX + gridY
+	gridY := (int(y) - am.Top) / am.gridHeight()
+	gid = gridY*am.GridsX + gridX
 	return
 }
 
@@ -125,10 +124,10 @@ func (am *AOIManager) GetGidByPosition(x, y float32) (gid int) {
 func (am *AOIManager) GetPlayersByPosition(x, y float32) (playerIDs []int32) {
 	//根据坐标返回所在格子的ID
 	gid := am.GetGidByPosition(x, y)
-	fmt.Println("gid:--------1:", gid)
+	fmt.Println("============================gid:", gid)
 	//根据格子ID返回周围格子集合
 	grids := am.GetSurroundingsByGid(gid)
-	fmt.Println("neighbor gid :", grids)
+	fmt.Println("========================================neighbor gid :", grids)
 
 	for _, grid := range grids {
 		playerIDs = append(playerIDs, grid.GetPlayerIDs()...)
@@ -165,6 +164,7 @@ func (am *AOIManager) GetPlayerIDsFromGrid(gid int) (playerIDs []int32) {
 //向坐标系 （x,y）对应的Grid:gid中加入Player:pid
 func (am *AOIManager) AddPlayerToPosition(pid int32, x, y float32) {
 	gid := am.GetGidByPosition(x, y)
+	fmt.Printf("\n\n\t\tpid=%d,to gid=%d\n\n", pid, gid)
 	am.AddPlayerToGrid(pid, gid)
 
 }
