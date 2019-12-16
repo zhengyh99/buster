@@ -1,6 +1,9 @@
 package kernel
 
-import "sync"
+import (
+	"fmt"
+	"sync"
+)
 
 //定义世界管理
 type WorldManager struct {
@@ -34,6 +37,7 @@ func (wm *WorldManager) RemovePlayer(pid int32) {
 	wm.PLock.Lock()
 	defer wm.PLock.Unlock()
 	player := wm.Players[pid]
+	fmt.Println("player:", player)
 	if player != nil {
 		wm.AoiMng.RemovePlayerFromPosition(player.Pid, player.X, player.Z)
 	}

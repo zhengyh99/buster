@@ -169,3 +169,14 @@ func (p *Player) UpdatePosition(x, y, z, v float32) {
 		player.SendMsg(200, pMsg)
 	}
 }
+
+func (p *Player) OffLine() {
+	players := p.getSurroundingPlayers()
+	pMsg := &pb.SyncPid{
+		Pid: p.Pid,
+	}
+	for _, player := range players {
+		player.SendMsg(201, pMsg)
+	}
+	WorldMng.RemovePlayer(p.Pid)
+}
