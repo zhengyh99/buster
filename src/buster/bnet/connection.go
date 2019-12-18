@@ -75,26 +75,12 @@ func (c *Connection) StartRead() {
 	defer c.Stop()
 	for {
 		//对接收的数据拆包
-		dp := NewDataPack()
-		headData := make([]byte, dp.GetHeadLen())
-		if _, err := io.ReadFull(c.GetTCPConnection(), headData); err != nil {
-			fmt.Println("read Message head error:", err)
-			break
-		}
-		msg, err := dp.UnPack(headData)
+
+		msg, err := c.getMsg()
 		if err != nil {
-			fmt.Println("datapack error:", err)
+			fmt.Printf("connection get Message error :", err)
 			break
 		}
-		var data []byte
-		if msg.GetDataLen() > 0 {
-			data = make([]byte, msg.GetDataLen())
-			if _, err := io.ReadFull(c.GetTCPConnection(), data); err != nil {
-				fmt.Println("read Message head error:", err)
-				break
-			}
-		}
-		msg.SetData(data)
 
 		//定义一个Resuest
 		req := &Request{
@@ -205,4 +191,29 @@ func (c *Connection) RemoveProperty(key string) {
 	c.propertyLock.Lock()
 	defer c.propertyLock.Unlock()
 	delete(c.property, key)
+}
+
+func (c *Connection) getMsg() (iface.IMessage, error) {
+	dp := NewDataPack()
+	headData := make([]byte, dp.GetHeadLen())
+	if _, err := io.ReadFull(c.GetTCPConnection(), headData); err != nil {
+		fmt.Println("read Message head error:", err)
+		return nil, err
+	}
+	msg, err := dp.UnPack(headData)
+	if err != nil {
+		fmt.Println("datapack error:", err)
+		return nil, err
+	}
+	var data []byte
+	if msg.GetDataLen() > 0 {
+		data = make([]byte, msg.GetDataLen())
+		if _, err := io.ReadFull(c.GetTCPConnection(), data); err != nil {
+			fmt.Println("read Message head error:", err)
+			return nil, err
+		}
+	}
+	msg.SetData(data)
+	return msg, nil
+
 }
