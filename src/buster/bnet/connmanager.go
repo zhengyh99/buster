@@ -42,9 +42,8 @@ func (cm *ConnManager) Get(connID uint32) (iface.IConnection, error) {
 	defer cm.connLock.RUnlock()
 	if conn, ok := cm.connections[connID]; ok {
 		return conn, nil
-	} else {
-		return nil, fmt.Errorf("Connid:%d is not found!\n ", connID)
 	}
+	return nil, fmt.Errorf("Connid:%d is not found!\n ", connID)
 
 }
 
