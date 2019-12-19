@@ -1,5 +1,7 @@
 package iface
 
+import "net"
+
 /**
 封包 拆包模块
 */
@@ -12,5 +14,5 @@ type IDataPack interface {
 	Pack(msg IMessage) (data []byte, err error)
 
 	//拆包
-	UnPack(data []byte) (msg IMessage, err error)
+	UnPack(conn net.Conn) (IMessage, error)
 }

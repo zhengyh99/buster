@@ -1,7 +1,7 @@
 package main
 
 import (
-	bnet "buster/net"
+	"buster/bnet"
 	"fmt"
 	"net"
 )
@@ -21,7 +21,7 @@ func main() {
 	mstr1 := []byte("hello buster!!!")
 	mstr2 := []byte("你好，巴斯特！！！")
 
-	msg1 := bnet.Message{
+	msg1 := &bnet.Message{
 		ID:      1,
 		DataLen: uint32(len(mstr1)),
 		Data:    mstr1,
@@ -31,7 +31,7 @@ func main() {
 		fmt.Println("pack msg1 error:", err)
 		return
 	}
-	msg2 := bnet.Message{
+	msg2 := &bnet.Message{
 		ID:      1,
 		DataLen: uint32(len(mstr2)),
 		Data:    mstr2,
@@ -44,5 +44,6 @@ func main() {
 	send1 = append(send1, send2...)
 	fmt.Println("start send")
 	conn.Write(send1)
+	select {}
 
 }

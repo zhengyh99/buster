@@ -7,6 +7,8 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"io"
+	"net"
 )
 
 type DataPack struct{}
@@ -40,16 +42,23 @@ func (dp *DataPack) Pack(msg iface.IMessage) (data []byte, err error) {
 }
 
 //拆包
-func (dp *DataPack) UnPack(data []byte) (iface.IMessage, error) {
+func (dp *DataPack) UnPack(conn net.Conn) (iface.IMessage, error) {
+
+	//获取并解析包头
+	headData := make([]byte, dp.GetHeadLen())
+	if _, err := io.ReadFull(conn, headData); err != nil {
+		fmt.Println("read Message head error:", err)
+		return nil, err
+	}
 	msg := &Message{}
-	bf := bytes.NewBuffer(data)
-	//读长度
+	bf := bytes.NewBuffer(headData)
+	//读长度msg.DataLen
 	if err := binary.Read(bf, binary.LittleEndian, &msg.DataLen); err != nil {
 		fmt.Println("binary read1 error:", err)
 		return nil, err
 	}
 
-	//读id
+	//读id msg.ID
 	if err := binary.Read(bf, binary.LittleEndian, &msg.ID); err != nil {
 		fmt.Println("binary read2 error:", err)
 		return nil, err
@@ -58,6 +67,19 @@ func (dp *DataPack) UnPack(data []byte) (iface.IMessage, error) {
 	if utils.GlobalConfig.MaxDataPackSize > 0 && utils.GlobalConfig.MaxDataPackSize < msg.DataLen {
 		return nil, errors.New("Data length exceeds limit")
 	}
+
+	//读消息体 msg.Data
+	var data []byte
+	if msg.GetDataLen() > 0 {
+		data = make([]byte, msg.GetDataLen())
+		if _, err := io.ReadFull(conn, data); err != nil {
+			fmt.Println("read Message head error:", err)
+			return nil, err
+		}
+	}
+	msg.SetData(data)
+
+	fmt.Println(">>>>>>>>,,,,, msg", msg)
 	return msg, nil
 
 }

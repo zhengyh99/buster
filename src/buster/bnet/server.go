@@ -71,7 +71,7 @@ func (s *Server) GetConnMng() iface.IConnManager {
 //服务器开启
 func (s *Server) Start() {
 	fmt.Printf("服务器：%s【%s:%d】正在开启....\n", s.Name, s.IP, s.Port)
-	fmt.Printf("服务器版本号：%d; 最大连接数：%d; 数据包最大值：%d \n",
+	fmt.Printf("服务器版本号：%v; 最大连接数：%d; 数据包最大值：%d \n",
 		utils.GlobalConfig.Version, utils.GlobalConfig.MaxConn, utils.GlobalConfig.MaxDataPackSize)
 	go func() {
 		//开启任务池

@@ -1,13 +1,13 @@
 package routers
 
 import (
+	"buster/bnet"
 	"buster/iface"
-	"buster/net"
 	"fmt"
 )
 
 type DataPackRouter struct {
-	net.BaseRouter
+	bnet.BaseRouter
 }
 
 //处理conn 业务的Hook方法

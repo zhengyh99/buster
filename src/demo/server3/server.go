@@ -1,10 +1,9 @@
 package main
 
 import (
+	"buster/bnet"
 	"buster/iface"
-	"buster/net"
 	"buster/routers"
-	"buster/utils"
 	"fmt"
 	"strconv"
 	"time"
@@ -29,7 +28,7 @@ func OnConnLost(conn iface.IConnection) {
 	fmt.Printf("CName:%s,\nQQ:%d\n,Date:%s\n\n", cname, QQ, Date.Format(layout))
 }
 func main() {
-	server := net.NewServer(utils.GlobalObject)
+	server := bnet.NewServer()
 	server.SetOnConnStart(OnConnBegin)
 	server.SetOnConnStop(OnConnLost)
 	server.AddRouter(0, &routers.DataPackRouter{})

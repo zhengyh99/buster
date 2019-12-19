@@ -1,13 +1,13 @@
 package routers
 
 import (
+	"buster/bnet"
 	"buster/iface"
-	"buster/net"
 	"fmt"
 )
 
 type PingRouter struct {
-	net.BaseRouter
+	bnet.BaseRouter
 }
 
 //处理conn 业务之前的Hook方法

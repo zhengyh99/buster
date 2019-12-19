@@ -5,7 +5,6 @@ import (
 	"buster/utils"
 	"errors"
 	"fmt"
-	"io"
 	"net"
 	"sync"
 )
@@ -78,7 +77,7 @@ func (c *Connection) StartRead() {
 
 		msg, err := c.getMsg()
 		if err != nil {
-			fmt.Printf("connection get Message error :", err)
+			fmt.Println("connection get Message error :", err)
 			break
 		}
 
@@ -193,27 +192,9 @@ func (c *Connection) RemoveProperty(key string) {
 	delete(c.property, key)
 }
 
+//拆包，解析数据，获取消息
 func (c *Connection) getMsg() (iface.IMessage, error) {
-	dp := NewDataPack()
-	headData := make([]byte, dp.GetHeadLen())
-	if _, err := io.ReadFull(c.GetTCPConnection(), headData); err != nil {
-		fmt.Println("read Message head error:", err)
-		return nil, err
-	}
-	msg, err := dp.UnPack(headData)
-	if err != nil {
-		fmt.Println("datapack error:", err)
-		return nil, err
-	}
-	var data []byte
-	if msg.GetDataLen() > 0 {
-		data = make([]byte, msg.GetDataLen())
-		if _, err := io.ReadFull(c.GetTCPConnection(), data); err != nil {
-			fmt.Println("read Message head error:", err)
-			return nil, err
-		}
-	}
-	msg.SetData(data)
-	return msg, nil
 
+	dp := NewDataPack()
+	return dp.UnPack(c.GetTCPConnection())
 }
